@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import urllib.parse
 import sys
 
 from bs4 import BeautifulSoup
@@ -109,7 +110,7 @@ class LCDownloader:
                 # filename. Extract this from the 'Location' header
                 head = self.session.head(url)
                 real_url = self.get_abs_url(head.headers["Location"])
-                filename = real_url.split("/")[-1]
+                filename = urllib.parse.unquote(real_url.split("/")[-1])
                 path = os.path.join(*current_path, filename)
                 yield (path, real_url)
             # Pattern for folders
