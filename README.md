@@ -1,7 +1,8 @@
 # lc_downloader
 
 Small Python 3 script to download learning materials from [Learning
-Central](https://learningcentral.cf.ac.uk) for Cardiff University.
+Central](https://learningcentral.cf.ac.uk) for Cardiff University. Works as of
+December 2018.
 
 Install requirements with `pip3 install -r requirements.txt`.
 
