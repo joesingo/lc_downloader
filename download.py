@@ -7,6 +7,12 @@ from bs4 import BeautifulSoup
 import requests
 
 
+class LCDownloadException(Exception):
+    """
+    Something went wrong with downloading materials from LC
+    """
+
+
 class LCDownloader:
     LC_HOME = "https://learningcentral.cf.ac.uk"
     FILE_URL_PREFIX = "/bbcswebdav"
@@ -15,6 +21,15 @@ class LCDownloader:
     def __init__(self, session_id):
         self.session = requests.Session()
         self.session.cookies["s_session_id"] = session_id
+
+    def check_session(self):
+        """
+        Check the validity of the session ID
+        """
+        # The login 'redirect' is actually a 200, so check text of page instead
+        # of status code
+        if "SSO Redirect" in self.session.get(self.LC_HOME).text:
+            raise LCDownloadException("Session ID is not valid")
 
     def get_module_urls(self):
         """
@@ -42,8 +57,8 @@ class LCDownloader:
         try:
             lm_link = [l for l in resp.find_all("a") if l.text == "Learning Materials"][0]
         except IndexError:
-            print("Could not find Learning Materials link", file=sys.stderr)
-            sys.exit(1)
+            raise LCDownloadException("Could not find Learning Materials link")
+
         return self.get_abs_url(lm_link["href"])
 
     def download_all(self, query, out_dir):
@@ -63,10 +78,10 @@ class LCDownloader:
                 break
         else:
             sys.stdout = sys.stderr
-            print("Could not find module matching '{}'".format(query))
-            print("Modules found were:")
-            print("{}".format("\n".join([n for (n, _) in mod_urls])))
-            sys.exit(1)
+            err_msg = "Could not find module matching '{}'\n".format(query)
+            err_msg += "Modules found were:\n"
+            err_msg += "{}".format("\n".join([n for (n, _) in mod_urls]))
+            raise LCDownloadException(err_msg)
 
         # Find and download the files
         no_files_found = True
@@ -126,4 +141,9 @@ if __name__ == "__main__":
         sys.exit(1)
 
     lc = LCDownloader(s_id)
-    lc.download_all(module, o_dir)
+    try:
+        lc.check_session()
+        lc.download_all(module, o_dir)
+    except LCDownloadException as ex:
+        print(ex, file=sys.stderr)
+        sys.exit(1)
