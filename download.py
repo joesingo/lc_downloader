@@ -1,12 +1,4 @@
 #!/usr/bin/env python3
-"""
-TODO:
-* do not try to dowload links to other webpages (e.g. in comb opt week 1 folder)
-* give session ID in env var
-* download under specific folder, option to not download recursively
-* filter file types
-* option to remove spaces from filenames
-"""
 import os
 import sys
 
